@@ -1,0 +1,873 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>AccelerateHR Portal</title>
+<style>
+  :root{
+    --bg:#f9fafb; --card:#fff; --text:#111827; --muted:#6b7280; --border:#e5e7eb;
+    --blue:#2563eb; --blue2:#1d4ed8; --shadow:0 10px 20px rgba(17,24,39,.06);
+    --radius:16px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;background:var(--bg);color:var(--text)}
+  a{color:inherit;text-decoration:none}
+  .app{min-height:100vh;display:flex;flex-direction:column}
+  header{position:sticky;top:0;z-index:50;background:var(--card);border-bottom:1px solid var(--border)}
+  .navwrap{max-width:1100px;margin:0 auto;padding:0 16px;height:64px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .brand{display:flex;align-items:center;gap:10px}
+  .logo{width:34px;height:34px;border-radius:10px;background:var(--blue);display:grid;place-items:center;color:#fff;font-weight:800}
+  .brandname{font-weight:800;letter-spacing:-.02em;font-size:20px}
+  .brandname span{color:var(--blue)}
+  .navlinks{display:flex;gap:6px;align-items:center}
+  .navlinks a{padding:10px 10px;border-radius:10px;font-size:14px;font-weight:650;color:#374151}
+  .navlinks a.active{background:#eff6ff;color:var(--blue2)}
+  .burger{display:none;border:1px solid var(--border);background:var(--card);border-radius:12px;padding:10px;cursor:pointer}
+  .burger:active{transform:translateY(1px)}
+  main{flex:1}
+  .container{max-width:1100px;margin:0 auto;padding:24px 16px 56px}
+  .page{display:none}
+  .page.active{display:block}
+  /* hero */
+  .hero{
+    position:relative;overflow:hidden;border-radius:28px;background:#111827;color:#fff;
+    min-height:380px;display:flex;align-items:center;
+    box-shadow:var(--shadow);
+  }
+  .hero::before{
+    content:"";position:absolute;inset:0;
+    background:linear-gradient(0deg,rgba(17,24,39,.78),rgba(17,24,39,.55)), url('https://images.unsplash.com/photo-1646215993316-c98f642303ce?auto=format&fit=crop&w=1600&q=80');
+    background-size:cover;background-position:center;
+    opacity:.95;
+  }
+  .hero-inner{position:relative;z-index:1;padding:54px 34px;max-width:680px}
+  .pill{display:inline-flex;gap:8px;align-items:center;padding:6px 10px;border-radius:999px;background:rgba(37,99,235,.18);color:#bfdbfe;font-size:13px;font-weight:650;border:1px solid rgba(59,130,246,.25)}
+  .h1{font-size:44px;line-height:1.05;margin:14px 0 14px;font-weight:900;letter-spacing:-.03em}
+  .lead{font-size:18px;color:#d1d5db;max-width:55ch;margin:0}
+  /* cards */
+  .section-title{margin:34px 0 18px;text-align:center}
+  .section-title h2{margin:0 0 8px;font-size:30px;letter-spacing:-.02em}
+  .section-title p{margin:0 auto;color:var(--muted);max-width:70ch}
+  .grid{display:grid;grid-template-columns:repeat(1,minmax(0,1fr));gap:16px}
+  @media (min-width:720px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media (min-width:1000px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+  .card{background:var(--card);border:1px solid #eef2f7;border-radius:20px;padding:18px;box-shadow:0 1px 0 rgba(17,24,39,.02);transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease}
+  .card:hover{transform:translateY(-1px);box-shadow:var(--shadow);border-color:#dbeafe}
+  .cardtop{display:flex;align-items:flex-start;gap:12px}
+  .icon{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;color:#fff;font-weight:900}
+  .card h3{margin:0 0 6px;font-size:16px;letter-spacing:-.01em}
+  .card p{margin:0;color:var(--muted);font-size:14px;line-height:1.4}
+  .cardfoot{margin-top:14px;display:flex;align-items:center;justify-content:space-between;color:var(--blue2);font-weight:700;font-size:14px}
+  .tagrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .tag{font-size:12px;color:#374151;background:#f3f4f6;border:1px solid #e5e7eb;padding:4px 8px;border-radius:999px}
+  /* page headers */
+  .pagehead{display:flex;gap:14px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;margin-bottom:18px}
+  .pagehead h1{margin:0;font-size:28px;letter-spacing:-.02em}
+  .pagehead p{margin:6px 0 0;color:var(--muted);max-width:80ch}
+  .controls{display:flex;gap:10px;flex-wrap:wrap}
+  input[type="search"], .select{
+    background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 12px;font-size:14px;min-width:220px
+  }
+  .btn{
+    border:1px solid var(--border);background:var(--card);border-radius:12px;padding:10px 12px;font-weight:700;cursor:pointer
+  }
+  .btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+  .btn:active{transform:translateY(1px)}
+  /* table */
+  table{width:100%;border-collapse:separate;border-spacing:0}
+  th,td{padding:10px 10px;border-bottom:1px solid var(--border);text-align:left;font-size:14px}
+  th{color:#374151;font-size:12px;text-transform:uppercase;letter-spacing:.08em}
+  /* modal */
+  .backdrop{position:fixed;inset:0;background:rgba(17,24,39,.55);display:none;align-items:center;justify-content:center;padding:18px;z-index:100}
+  .backdrop.open{display:flex}
+  .modal{background:var(--card);border-radius:18px;max-width:820px;width:100%;max-height:86vh;overflow:auto;border:1px solid var(--border);box-shadow:0 30px 70px rgba(0,0,0,.25)}
+  .modal-header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:18px 18px 8px;border-bottom:1px solid var(--border)}
+  .modal-header h3{margin:0;font-size:18px}
+  .modal-body{padding:14px 18px 18px}
+  .close{border:1px solid var(--border);background:#fff;border-radius:12px;padding:8px 10px;cursor:pointer}
+  .two-col{display:grid;grid-template-columns:1fr;gap:16px}
+  @media(min-width:900px){.two-col{grid-template-columns:1.2fr .8fr}}
+  .small{font-size:13px;color:var(--muted)}
+  .kpi{border:1px solid var(--border);border-radius:16px;padding:14px}
+  .kpi h4{margin:0 0 6px}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;background:#0b1220;color:#e5e7eb;padding:10px 12px;border-radius:12px;overflow:auto}
+  /* mobile nav */
+  @media(max-width:860px){
+    .navlinks{display:none}
+    .burger{display:inline-block}
+    .mobile{display:none;background:var(--card);border-bottom:1px solid var(--border)}
+    .mobile.open{display:block}
+    .mobile a{display:block;padding:12px 16px;border-top:1px solid #f3f4f6;font-weight:650;color:#374151}
+    .mobile a.active{color:var(--blue2);background:#eff6ff}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="navwrap">
+      <div class="brand">
+        <div class="logo">HR</div>
+        <a class="brandname" href="#/">Accelerate<span>HR</span></a>
+      </div>
+      <nav class="navlinks" id="navlinks"></nav>
+      <button class="burger" id="burger" aria-label="Menu">☰</button>
+    </div>
+    <div class="mobile" id="mobileNav"></div>
+  </header>
+
+  <main>
+    <div class="container">
+      <!-- HOME -->
+      <section class="page" id="page-home">
+        <div class="hero">
+          <div class="hero-inner">
+            <div class="pill">✨ Welcome to the Future of HR</div>
+            <div class="h1">Empowering Talent Through Data &amp; Innovation</div>
+            <p class="lead">Explore our comprehensive ecosystem of HR solutions, from advanced data modeling to AI-driven operational tools.</p>
+          </div>
+        </div>
+
+        <div class="section-title">
+          <h2>Our Ecosystem</h2>
+          <p>Select a module to dive deeper into our built content and demo the power of AccelerateHR.</p>
+        </div>
+
+        <div class="grid" id="homeGrid"></div>
+      </section>
+
+      <!-- BROCHURE -->
+      <section class="page" id="page-brochure">
+        <div class="pagehead">
+          <div>
+            <h1>Brochure &amp; Resources</h1>
+            <p>Explore strategic documents, presentations, and reference guides. (Buttons below are placeholders — wire them to your SharePoint file URLs.)</p>
+          </div>
+        </div>
+        <div class="grid" id="brochureGrid"></div>
+      </section>
+
+      <!-- DATA MODELS -->
+      <section class="page" id="page-data-models">
+        <div class="pagehead">
+          <div>
+            <h1>Data Models</h1>
+            <p>Search and open data model cards to view sample schema fields and included KPI coverage.</p>
+          </div>
+          <div class="controls">
+            <input type="search" id="modelSearch" placeholder="Search models, tags, fields…" />
+            <button class="btn" id="clearModelSearch">Clear</button>
+          </div>
+        </div>
+        <div class="grid" id="modelsGrid"></div>
+      </section>
+
+      <!-- OBSERVATION DECK -->
+      <section class="page" id="page-observation-deck">
+        <div class="pagehead">
+          <div>
+            <h1>Observation Deck</h1>
+            <p>Executive dashboards for real-time workforce insights. Open a dashboard to preview sample visuals.</p>
+          </div>
+        </div>
+        <div class="grid" id="dashGrid"></div>
+      </section>
+
+      <!-- OPERATIONAL PLATFORM -->
+      <section class="page" id="page-operational-platform">
+        <div class="pagehead">
+          <div>
+            <h1>Operational Platform</h1>
+            <p>AI-powered tools for recruitment and performance management. This is a safe, local demo (no data leaves the browser).</p>
+          </div>
+        </div>
+        <div class="grid" id="toolsGrid"></div>
+      </section>
+
+      <!-- KPI HUB -->
+      <section class="page" id="page-kpi-hub">
+        <div class="pagehead">
+          <div>
+            <h1>KPI Hub</h1>
+            <p>A library of HR metric definitions, formulas, and strategic benchmarks.</p>
+          </div>
+          <div class="controls">
+            <select class="select" id="kpiCategory"></select>
+            <input type="search" id="kpiSearch" placeholder="Search KPIs…" />
+            <button class="btn" id="clearKpiSearch">Clear</button>
+          </div>
+        </div>
+        <div class="grid" id="kpiGrid"></div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<!-- Modal -->
+<div class="backdrop" id="backdrop" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="modal" aria-labelledby="modalTitle">
+    <div class="modal-header">
+      <div>
+        <h3 id="modalTitle">Details</h3>
+        <div class="small" id="modalSubtitle"></div>
+      </div>
+      <button class="close" id="modalClose">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+/** Minimal hash-router + vanilla rendering.
+ *  Designed to be embedded via iFrame (modern SharePoint) or Script Editor (classic).
+ */
+const NAV = [
+  { name:"Home", hash:"#/", id:"home" },
+  { name:"Brochure", hash:"#/brochure", id:"brochure" },
+  { name:"Data Models", hash:"#/data-models", id:"data-models" },
+  { name:"Observation Deck", hash:"#/observation-deck", id:"observation-deck" },
+  { name:"Operational Platform", hash:"#/operational-platform", id:"operational-platform" },
+  { name:"KPI Hub", hash:"#/kpi-hub", id:"kpi-hub" },
+];
+
+const FEATURES = [
+  { name:"AccelerateHR Brochure", desc:"Explore our strategic vision, PPTs, and PDF resources.", hash:"#/brochure", color:"#3b82f6", emoji:"📄" },
+  { name:"Data Models", desc:"Access our comprehensive repository of HR data structures.", hash:"#/data-models", color:"#a855f7", emoji:"🗂️" },
+  { name:"Observation Deck", desc:"Executive dashboards for real-time workforce insights.", hash:"#/observation-deck", color:"#6366f1", emoji:"📊" },
+  { name:"Operational Platform", desc:"AI-powered tools for recruitment and performance management.", hash:"#/operational-platform", color:"#10b981", emoji:"🤖" },
+  { name:"KPI Hub", desc:"HR metric definitions, formulas, and strategic benchmarks.", hash:"#/kpi-hub", color:"#f97316", emoji:"🎯" },
+];
+
+const BROCHURE = [
+  { title:"AccelerateHR Strategy 2026", type:"PDF", size:"4.2 MB", category:"Strategic Planning", desc:"Our core roadmap and strategic pillars for the upcoming fiscal year." },
+  { title:"Quarterly Talent Review", type:"PPT", size:"12.8 MB", category:"Executive Reporting", desc:"Visual presentation of our talent density and growth projections." },
+  { title:"Culture & Values Playbook", type:"PDF", size:"2.1 MB", category:"People & Culture", desc:"Internal guide on our company values and cultural framework." },
+  { title:"Tech Stack & Implementation Guide", type:"PDF", size:"1.5 MB", category:"Operations", desc:"Technical documentation for HR content deployment." },
+];
+
+const MODELS = [
+  {
+    id:1,
+    title:"Workforce Planning",
+    desc:"Multi-dimensional models for headcount forecasting, churn analysis, and resource optimization.",
+    tags:["Forecasting","FTE","Budgeting"],
+    metrics:"12 KPIs included",
+    schema:[
+      { field:"employee_id", type:"UUID", description:"Unique identifier for employee" },
+      { field:"snapshot_date", type:"DATE", description:"Date of headcount record" },
+      { field:"org_unit", type:"STRING", description:"Business unit identifier" },
+      { field:"salary_base", type:"DECIMAL", description:"Annual base salary" },
+      { field:"tenure_months", type:"INT", description:"Total months at company" },
+    ]
+  },
+  {
+    id:2,
+    title:"Talent Acquisition",
+    desc:"Funnel conversion models, cost-per-hire analytics, and sourcing effectiveness frameworks.",
+    tags:["ATS Data","Recruitment","Funnel"],
+    metrics:"9 KPIs included",
+    schema:[
+      { field:"requisition_id", type:"UUID", description:"Unique job requisition identifier" },
+      { field:"stage", type:"STRING", description:"Candidate pipeline stage" },
+      { field:"source", type:"STRING", description:"Sourcing channel / origin" },
+      { field:"days_in_stage", type:"INT", description:"Time spent in current stage" },
+      { field:"offer_accepted", type:"BOOLEAN", description:"Whether offer was accepted" },
+    ]
+  },
+  {
+    id:3,
+    title:"People Development",
+    desc:"Learning, skill progression, performance signals, and internal mobility tracking models.",
+    tags:["Learning","Skills","Performance"],
+    metrics:"15 KPIs included",
+    schema:[
+      { field:"employee_id", type:"UUID", description:"Unique identifier for employee" },
+      { field:"skill", type:"STRING", description:"Skill taxonomy item" },
+      { field:"skill_level", type:"INT", description:"Proficiency level (1-5)" },
+      { field:"training_hours", type:"DECIMAL", description:"Completed learning hours" },
+      { field:"promotion_flag", type:"BOOLEAN", description:"Promotion during period" },
+    ]
+  },
+];
+
+const DASHBOARDS = [
+  {
+    id:"workforce",
+    title:"Executive Workforce Overview",
+    desc:"High-level visualization of global headcount, turnover, and labor costs.",
+    viewers:"CxO, VP level",
+    image:"https://images.unsplash.com/photo-1652265540589-46f91535337b?auto=format&fit=crop&w=1600&q=80"
+  },
+  {
+    id:"talent",
+    title:"Strategic Talent Pipeline",
+    desc:"Deep dive into recruitment velocity, candidate quality, and diversity ratios.",
+    viewers:"Talent leadership",
+    image:"https://images.unsplash.com/photo-1740908900846-4bbd4f22c975?auto=format&fit=crop&w=1600&q=80"
+  },
+  {
+    id:"growth",
+    title:"Org Growth & Productivity",
+    desc:"Correlation views across performance, engagement, and retention risk signals.",
+    viewers:"People analytics",
+    image:"https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1600&q=80"
+  }
+];
+
+const AI_TOOLS = [
+  { id:"jd", title:"Job Description Generator", status:"Active", color:"#7c3aed",
+    desc:"Generates inclusive, skills-based job descriptions from role titles and core requirements.",
+    placeholder:"e.g. Senior Frontend Developer with React experience…"
+  },
+  { id:"review", title:"Performance & Skills Review", status:"Active", color:"#2563eb",
+    desc:"Summarize feedback and skill assessments into actionable development plans.",
+    placeholder:"Paste employee feedback notes here…"
+  },
+  { id:"matching", title:"Candidate Matching Engine", status:"Beta", color:"#10b981",
+    desc:"Match internal/external talent to open roles based on skill overlap and potential.",
+    placeholder:"Paste candidate resume text or skill list…"
+  }
+];
+
+const KPI_CATEGORIES = [
+  { id:"all", name:"All Metrics" },
+  { id:"workforce", name:"Workforce Composition" },
+  { id:"recruitment", name:"Talent Acquisition" },
+  { id:"development", name:"Learning & Dev" },
+  { id:"engagement", name:"Culture & Engagement" },
+];
+
+const KPI_LIBRARY = [
+  { id:1, category:"workforce", name:"Headcount Growth Rate",
+    definition:"Percentage change in total number of employees over a period.",
+    formula:"((End Count - Start Count) / Start Count) * 100",
+    importance:"Indicates organizational expansion velocity and scaling health.",
+    tags:["Strategic","Growth"]
+  },
+  { id:2, category:"workforce", name:"Voluntary Turnover Rate",
+    definition:"Rate at which employees leave of their own volition.",
+    formula:"(Voluntary Resignations / Average Headcount) * 100",
+    importance:"Signals engagement, retention risk, and culture health.",
+    tags:["Retention","Engagement"]
+  },
+  { id:3, category:"recruitment", name:"Time to Fill",
+    definition:"Average number of days to fill an open position from approval to acceptance.",
+    formula:"Sum(Days from Requisition Open to Offer Accepted) / # of Filled Roles",
+    importance:"Measures hiring velocity and process efficiency.",
+    tags:["Efficiency","Hiring"]
+  },
+  { id:4, category:"recruitment", name:"Offer Acceptance Rate (OAR)",
+    definition:"Percentage of offers accepted by candidates.",
+    formula:"(Offers Accepted / Total Offers Extended) * 100",
+    importance:"Reflects competitiveness of offers and candidate experience.",
+    tags:["Hiring","Compensation"]
+  },
+  { id:5, category:"development", name:"Internal Mobility Rate",
+    definition:"Share of roles filled by internal candidates over a period.",
+    formula:"(Internal Fills / Total Fills) * 100",
+    importance:"Indicates career growth pathways and talent marketplace maturity.",
+    tags:["Career","Development"]
+  },
+  { id:6, category:"development", name:"Skills Gap Coverage",
+    definition:"Extent to which critical skill gaps are being closed via hiring or development.",
+    formula:"(Skills Gaps Closed / Total Identified Skill Gaps) * 100",
+    importance:"Tracks progress against strategic capability build.",
+    tags:["Skills","Strategy"]
+  },
+  { id:7, category:"engagement", name:"Employee Net Promoter Score (eNPS)",
+    definition:"Employee willingness to recommend the organization as a place to work.",
+    formula:"%Promoters - %Detractors",
+    importance:"High-level proxy for engagement and advocacy.",
+    tags:["Engagement","Culture"]
+  },
+  { id:8, category:"engagement", name:"Absenteeism Rate",
+    definition:"Percentage of lost work time due to unscheduled absences.",
+    formula:"(Total Absent Days / Total Available Work Days) * 100",
+    importance:"Helps monitor wellbeing, burnout, and operational impact.",
+    tags:["Wellbeing","Operations"]
+  },
+];
+
+// ---------- Helpers ----------
+const $ = (sel, root=document) => root.querySelector(sel);
+const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+function esc(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+// ---------- Navigation ----------
+function renderNav(){
+  const nav = $("#navlinks");
+  const mobile = $("#mobileNav");
+  nav.innerHTML = "";
+  mobile.innerHTML = "";
+  NAV.forEach(item=>{
+    const a = document.createElement("a");
+    a.href = item.hash;
+    a.textContent = item.name;
+    a.dataset.route = item.id;
+    nav.appendChild(a);
+
+    const m = a.cloneNode(true);
+    mobile.appendChild(m);
+  });
+}
+function setActiveNav(routeId){
+  $$("#navlinks a, #mobileNav a").forEach(a=>{
+    a.classList.toggle("active", a.dataset.route === routeId);
+  });
+}
+$("#burger").addEventListener("click", ()=> $("#mobileNav").classList.toggle("open"));
+
+// ---------- Router ----------
+function routeFromHash(){
+  const h = location.hash || "#/";
+  const path = h.replace(/^#/, "");
+  switch(path){
+    case "/": return "home";
+    case "/brochure": return "brochure";
+    case "/data-models": return "data-models";
+    case "/observation-deck": return "observation-deck";
+    case "/operational-platform": return "operational-platform";
+    case "/kpi-hub": return "kpi-hub";
+    default: return "home";
+  }
+}
+function showPage(routeId){
+  $$(".page").forEach(p=>p.classList.remove("active"));
+  const map = {
+    "home":"#page-home",
+    "brochure":"#page-brochure",
+    "data-models":"#page-data-models",
+    "observation-deck":"#page-observation-deck",
+    "operational-platform":"#page-operational-platform",
+    "kpi-hub":"#page-kpi-hub",
+  };
+  const el = $(map[routeId]);
+  if(el) el.classList.add("active");
+  setActiveNav(routeId);
+  $("#mobileNav").classList.remove("open");
+}
+window.addEventListener("hashchange", ()=> showPage(routeFromHash()));
+
+// ---------- Modal ----------
+const backdrop = $("#backdrop");
+$("#modalClose").addEventListener("click", closeModal);
+backdrop.addEventListener("click", (e)=>{ if(e.target === backdrop) closeModal(); });
+window.addEventListener("keydown", (e)=>{ if(e.key==="Escape") closeModal(); });
+
+function openModal({title, subtitle="", bodyHtml=""}){
+  $("#modalTitle").textContent = title;
+  $("#modalSubtitle").textContent = subtitle;
+  $("#modalBody").innerHTML = bodyHtml;
+  backdrop.classList.add("open");
+  backdrop.setAttribute("aria-hidden", "false");
+}
+function closeModal(){
+  backdrop.classList.remove("open");
+  backdrop.setAttribute("aria-hidden", "true");
+  $("#modalBody").innerHTML = "";
+}
+
+// ---------- Render: Home ----------
+function renderHome(){
+  const grid = $("#homeGrid");
+  grid.innerHTML = FEATURES.map(f=>`
+    <a class="card" href="${f.hash}">
+      <div class="cardtop">
+        <div class="icon" style="background:${f.color}">${f.emoji}</div>
+        <div>
+          <h3>${esc(f.name)}</h3>
+          <p>${esc(f.desc)}</p>
+        </div>
+      </div>
+      <div class="cardfoot"><span>Open module</span><span>→</span></div>
+    </a>
+  `).join("");
+}
+
+// ---------- Render: Brochure ----------
+function renderBrochure(){
+  const grid = $("#brochureGrid");
+  grid.innerHTML = BROCHURE.map(r=>`
+    <div class="card">
+      <div class="cardtop">
+        <div class="icon" style="background:#0ea5e9">⬇️</div>
+        <div>
+          <h3>${esc(r.title)}</h3>
+          <p>${esc(r.desc)}</p>
+          <div class="tagrow">
+            <span class="tag">${esc(r.type)}</span>
+            <span class="tag">${esc(r.size)}</span>
+            <span class="tag">${esc(r.category)}</span>
+          </div>
+        </div>
+      </div>
+      <div class="cardfoot">
+        <button class="btn primary" data-download="${esc(r.title)}">Download</button>
+        <span>→</span>
+      </div>
+    </div>
+  `).join("");
+
+  grid.querySelectorAll("button[data-download]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      // Replace with SharePoint file URL download behavior.
+      alert("Wire this button to a SharePoint document URL for: " + btn.dataset.download);
+    });
+  });
+}
+
+// ---------- Render: Data Models ----------
+function modelMatches(m, q){
+  if(!q) return true;
+  q = q.toLowerCase();
+  const hay = [
+    m.title, m.desc, m.metrics, ...(m.tags||[]),
+    ...(m.schema||[]).flatMap(s=>[s.field,s.type,s.description])
+  ].join(" ").toLowerCase();
+  return hay.includes(q);
+}
+function renderModels(){
+  const grid = $("#modelsGrid");
+  const q = ($("#modelSearch").value || "").trim();
+  const items = MODELS.filter(m=>modelMatches(m,q));
+  grid.innerHTML = items.map(m=>`
+    <div class="card">
+      <div class="cardtop">
+        <div class="icon" style="background:#8b5cf6">🧩</div>
+        <div>
+          <h3>${esc(m.title)}</h3>
+          <p>${esc(m.desc)}</p>
+          <div class="tagrow">
+            ${(m.tags||[]).map(t=>`<span class="tag">${esc(t)}</span>`).join("")}
+            <span class="tag">${esc(m.metrics)}</span>
+          </div>
+        </div>
+      </div>
+      <div class="cardfoot">
+        <button class="btn" data-model="${m.id}">View schema</button>
+        <span>→</span>
+      </div>
+    </div>
+  `).join("");
+
+  grid.querySelectorAll("button[data-model]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const m = MODELS.find(x=>String(x.id)===String(btn.dataset.model));
+      openModal({
+        title: m.title,
+        subtitle: "Sample schema fields (customize to your real data model)",
+        bodyHtml: `
+          <div class="two-col">
+            <div>
+              <div class="small">Description</div>
+              <p style="margin-top:6px">${esc(m.desc)}</p>
+              <div class="small" style="margin-top:14px">Schema</div>
+              <div style="border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-top:8px">
+                <table>
+                  <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+                  <tbody>
+                    ${m.schema.map(s=>`<tr><td>${esc(s.field)}</td><td>${esc(s.type)}</td><td>${esc(s.description)}</td></tr>`).join("")}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div>
+              <div class="kpi">
+                <h4>KPI Coverage</h4>
+                <div class="small">${esc(m.metrics)}</div>
+                <p class="small" style="margin-top:10px">Tip: map each KPI to a metric layer (gold) and keep raw ingestion (bronze) separate for auditability.</p>
+              </div>
+              <div class="kpi" style="margin-top:14px">
+                <h4>Tags</h4>
+                <div class="tagrow">${(m.tags||[]).map(t=>`<span class="tag">${esc(t)}</span>`).join("")}</div>
+              </div>
+            </div>
+          </div>
+        `
+      });
+    });
+  });
+}
+$("#modelSearch").addEventListener("input", renderModels);
+$("#clearModelSearch").addEventListener("click", ()=>{ $("#modelSearch").value=""; renderModels(); });
+
+// ---------- Render: Observation Deck ----------
+function renderDashboards(){
+  const grid = $("#dashGrid");
+  grid.innerHTML = DASHBOARDS.map(d=>`
+    <div class="card">
+      <div class="cardtop">
+        <div class="icon" style="background:#6366f1">📈</div>
+        <div>
+          <h3>${esc(d.title)}</h3>
+          <p>${esc(d.desc)}</p>
+          <div class="tagrow">
+            <span class="tag">Audience: ${esc(d.viewers)}</span>
+          </div>
+        </div>
+      </div>
+      <div class="cardfoot">
+        <button class="btn" data-dash="${esc(d.id)}">Open preview</button>
+        <span>→</span>
+      </div>
+    </div>
+  `).join("");
+
+  grid.querySelectorAll("button[data-dash]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const d = DASHBOARDS.find(x=>x.id===btn.dataset.dash);
+      openModal({
+        title: d.title,
+        subtitle: d.viewers,
+        bodyHtml: `
+          <div class="two-col">
+            <div>
+              <img alt="" src="${esc(d.image)}" style="width:100%;border-radius:16px;border:1px solid var(--border);object-fit:cover;max-height:260px" />
+              <p style="margin:12px 0 0" class="small">${esc(d.desc)}</p>
+            </div>
+            <div>
+              <div class="small">Sample mini-charts (local demo)</div>
+              <canvas id="miniChart" width="360" height="220" style="width:100%;border:1px solid var(--border);border-radius:16px;background:#fff;margin-top:8px"></canvas>
+              <div class="small" style="margin-top:10px">Note: in production, embed Power BI / Tableau, or render from your analytics API.</div>
+            </div>
+          </div>
+        `
+      });
+      drawMiniChart($("#miniChart"));
+    });
+  });
+}
+function drawMiniChart(canvas){
+  if(!canvas) return;
+  const ctx = canvas.getContext("2d");
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0,0,W,H);
+  const pad=26;
+  const data=[42,55,49,66,61,74];
+  const max=Math.max(...data);
+  // axes
+  ctx.strokeStyle="#e5e7eb"; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(pad, pad); ctx.lineTo(pad, H-pad); ctx.lineTo(W-pad, H-pad); ctx.stroke();
+  // bars
+  const bw = (W-2*pad)/data.length * 0.64;
+  const gap = (W-2*pad)/data.length * 0.36;
+  data.forEach((v,i)=>{
+    const x = pad + i*((bw+gap));
+    const h = (H-2*pad) * (v/max);
+    const y = H-pad-h;
+    ctx.fillStyle = "rgba(37,99,235,.85)";
+    roundRect(ctx, x, y, bw, h, 8, true, false);
+  });
+  // label
+  ctx.fillStyle="#6b7280"; ctx.font="12px system-ui";
+  ctx.fillText("Headcount index (sample)", pad, 18);
+}
+function roundRect(ctx, x, y, w, h, r, fill, stroke){
+  if (w < 2 * r) r = w / 2;
+  if (h < 2 * r) r = h / 2;
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.arcTo(x+w, y, x+w, y+h, r);
+  ctx.arcTo(x+w, y+h, x, y+h, r);
+  ctx.arcTo(x, y+h, x, y, r);
+  ctx.arcTo(x, y, x+w, y, r);
+  ctx.closePath();
+  if(fill) ctx.fill();
+  if(stroke) ctx.stroke();
+}
+
+// ---------- Render: Operational Platform ----------
+function renderTools(){
+  const grid = $("#toolsGrid");
+  grid.innerHTML = AI_TOOLS.map(t=>`
+    <div class="card">
+      <div class="cardtop">
+        <div class="icon" style="background:${t.color}">✨</div>
+        <div>
+          <h3>${esc(t.title)}</h3>
+          <p>${esc(t.desc)}</p>
+          <div class="tagrow">
+            <span class="tag">Status: ${esc(t.status)}</span>
+          </div>
+        </div>
+      </div>
+      <div class="cardfoot">
+        <button class="btn" data-tool="${esc(t.id)}">Try demo</button>
+        <span>→</span>
+      </div>
+    </div>
+  `).join("");
+
+  grid.querySelectorAll("button[data-tool]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const t = AI_TOOLS.find(x=>x.id===btn.dataset.tool);
+      openModal({
+        title: t.title,
+        subtitle: "Local demo (no external calls)",
+        bodyHtml: `
+          <div class="small">Input</div>
+          <textarea id="toolInput" style="width:100%;min-height:120px;margin-top:8px;border:1px solid var(--border);border-radius:14px;padding:10px;font-size:14px" placeholder="${esc(t.placeholder)}"></textarea>
+          <div style="display:flex;gap:10px;align-items:center;margin-top:10px">
+            <button class="btn primary" id="runTool">Generate</button>
+            <button class="btn" id="clearTool">Clear</button>
+          </div>
+          <div class="small" style="margin-top:14px">Output</div>
+          <div class="mono" id="toolOutput" style="margin-top:8px;min-height:120px"></div>
+        `
+      });
+      $("#runTool").addEventListener("click", ()=>{
+        const input = ($("#toolInput").value||"").trim();
+        $("#toolOutput").textContent = generateLocalDemo(t.id, input);
+      });
+      $("#clearTool").addEventListener("click", ()=>{
+        $("#toolInput").value = "";
+        $("#toolOutput").textContent = "";
+      });
+    });
+  });
+}
+function generateLocalDemo(toolId, input){
+  const now = new Date().toISOString().slice(0,10);
+  if(!input) return "Tip: paste some text, then click Generate.";
+  if(toolId==="jd"){
+    return [
+      "JOB DESCRIPTION (Draft) — " + now,
+      "",
+      "Role: " + input,
+      "",
+      "What you'll do:",
+      "- Deliver high-quality outcomes with cross-functional partners",
+      "- Build inclusive, scalable processes and documentation",
+      "- Use data to inform decisions and iterate quickly",
+      "",
+      "What we're looking for:",
+      "- Demonstrated experience in the core role skills",
+      "- Strong communication and collaboration",
+      "- Commitment to accessibility, inclusion, and continuous learning",
+      "",
+      "Nice to have:",
+      "- Experience with analytics and automation",
+      "- Mentorship and team leadership"
+    ].join("\n");
+  }
+  if(toolId==="review"){
+    return [
+      "PERFORMANCE & SKILLS SUMMARY — " + now,
+      "",
+      "Inputs (excerpt):",
+      input.slice(0,260) + (input.length>260 ? "…" : ""),
+      "",
+      "Highlights:",
+      "- Consistent delivery and ownership",
+      "- Strong collaboration and stakeholder alignment",
+      "",
+      "Growth areas:",
+      "- Prioritize fewer initiatives to increase impact",
+      "- Deepen domain expertise in one strategic area",
+      "",
+      "Recommended next 30–60 days:",
+      "1) Define 2 measurable goals with success metrics",
+      "2) Schedule feedback checkpoints every 2 weeks",
+      "3) Pair with a mentor for targeted skill development"
+    ].join("\n");
+  }
+  // matching
+  return [
+    "CANDIDATE MATCH (Demo) — " + now,
+    "",
+    "Heuristic match score: " + (Math.min(92, 55 + Math.floor(input.length/12))) + "/100",
+    "",
+    "Top inferred skills:",
+    "- Communication",
+    "- Problem solving",
+    "- Domain knowledge (based on keywords)",
+    "",
+    "Next steps:",
+    "1) Validate top 5 skills via structured interview",
+    "2) Run a work-sample aligned to role outcomes",
+    "3) Compare against role rubric + leveling guide"
+  ].join("\n");
+}
+
+// ---------- Render: KPI Hub ----------
+function renderKpiFilters(){
+  const sel = $("#kpiCategory");
+  sel.innerHTML = KPI_CATEGORIES.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join("");
+}
+function kpiMatches(k, q){
+  if(!q) return true;
+  q = q.toLowerCase();
+  const hay = [k.name,k.definition,k.formula,k.importance,...(k.tags||[])].join(" ").toLowerCase();
+  return hay.includes(q);
+}
+function renderKpis(){
+  const grid = $("#kpiGrid");
+  const cat = $("#kpiCategory").value || "all";
+  const q = ($("#kpiSearch").value || "").trim();
+  const items = KPI_LIBRARY.filter(k => (cat==="all" || k.category===cat)).filter(k=>kpiMatches(k,q));
+
+  grid.innerHTML = items.map(k=>`
+    <div class="card">
+      <div class="cardtop">
+        <div class="icon" style="background:#f97316">📘</div>
+        <div>
+          <h3>${esc(k.name)}</h3>
+          <p>${esc(k.definition)}</p>
+          <div class="tagrow">${(k.tags||[]).map(t=>`<span class="tag">${esc(t)}</span>`).join("")}</div>
+        </div>
+      </div>
+      <div class="cardfoot">
+        <button class="btn" data-kpi="${k.id}">View details</button>
+        <span>→</span>
+      </div>
+    </div>
+  `).join("");
+
+  grid.querySelectorAll("button[data-kpi]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const k = KPI_LIBRARY.find(x=>String(x.id)===String(btn.dataset.kpi));
+      openModal({
+        title: k.name,
+        subtitle: KPI_CATEGORIES.find(c=>c.id===k.category)?.name || "",
+        bodyHtml: `
+          <div class="two-col">
+            <div>
+              <div class="small">Definition</div>
+              <p style="margin-top:6px">${esc(k.definition)}</p>
+              <div class="small" style="margin-top:12px">Formula</div>
+              <div class="mono" style="margin-top:8px">${esc(k.formula)}</div>
+            </div>
+            <div>
+              <div class="kpi">
+                <h4>Why it matters</h4>
+                <p class="small" style="margin:8px 0 0">${esc(k.importance)}</p>
+              </div>
+              <div class="kpi" style="margin-top:14px">
+                <h4>Tags</h4>
+                <div class="tagrow">${(k.tags||[]).map(t=>`<span class="tag">${esc(t)}</span>`).join("")}</div>
+              </div>
+            </div>
+          </div>
+        `
+      });
+    });
+  });
+}
+$("#kpiCategory").addEventListener("change", renderKpis);
+$("#kpiSearch").addEventListener("input", renderKpis);
+$("#clearKpiSearch").addEventListener("click", ()=>{ $("#kpiSearch").value=""; renderKpis(); });
+
+// ---------- Boot ----------
+renderNav();
+renderHome();
+renderBrochure();
+renderModels();
+renderDashboards();
+renderTools();
+renderKpiFilters();
+renderKpis();
+showPage(routeFromHash());
+</script>
+</body>
+</html>
