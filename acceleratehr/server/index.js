@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import db from './db/index.js';
 import { authMiddleware } from './middleware/auth.js';
@@ -16,6 +17,9 @@ import aiGenerateRoutes from './routes/ai-generate.js';
 import domainRoutes from './routes/domains.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const uploadsDir = path.join(__dirname, '..', 'uploads');
+if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+
 const app = express();
 const PORT = process.env.PORT || 3001;
 
@@ -35,6 +39,8 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
+
+app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
 app.use('/api/auth', authRoutes(db));
 app.use('/api/domains', domainRoutes(db));
