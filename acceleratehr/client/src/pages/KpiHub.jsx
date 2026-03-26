@@ -7,9 +7,10 @@ import Modal from '../components/Modal';
 import DomainBadge from '../components/DomainBadge';
 import { CardSkeleton } from '../components/Skeleton';
 import { Search, X, Download, Star } from 'lucide-react';
-import { DOMAINS, getDomain } from '../lib/domains';
+import { useDomains, getDomain } from '../lib/domains';
 
 export default function KpiHub() {
+  const { domains } = useDomains();
   const [domain, setDomain] = useState('all');
   const [search, setSearch] = useState('');
   const { data: kpis, isLoading } = useSWR(`/kpis?domain=${domain}&search=${search}`, fetcher);
@@ -66,7 +67,7 @@ export default function KpiHub() {
             className="px-3 py-2.5 rounded-xl bg-navy-800 border border-white/10 text-white text-sm focus:outline-none focus:border-accent-blue/50"
           >
             <option value="all">All Domains</option>
-            {DOMAINS.map(d => <option key={d.id} value={d.id}>{d.label}</option>)}
+            {domains.map(d => <option key={d.id} value={d.id}>{d.label}</option>)}
           </select>
           <button
             onClick={exportCSV}

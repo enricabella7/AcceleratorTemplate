@@ -2,7 +2,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Home, FileText, Database, BarChart3, Bot, Target,
-  Shield, Menu, X
+  Shield, Menu, X, Layers
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -13,6 +13,7 @@ const navItems = [
   { to: '/dashboards', icon: BarChart3, label: 'Observation Deck' },
   { to: '/ai-use-cases', icon: Bot, label: 'AI Use Cases' },
   { to: '/kpi-hub', icon: Target, label: 'KPI Hub' },
+  { to: '/domains', icon: Layers, label: 'Domain Explorer' },
 ];
 
 export default function Sidebar() {

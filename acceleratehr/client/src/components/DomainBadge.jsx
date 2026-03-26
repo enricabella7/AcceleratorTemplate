@@ -10,7 +10,7 @@ export default function DomainBadge({ domainId, size = 'sm' }) {
       className={`inline-flex items-center gap-1.5 ${sizeClasses} rounded-full font-semibold`}
       style={{ background: `${domain.color}20`, color: domain.color }}
     >
-      <Icon size={size === 'sm' ? 12 : 14} />
+      {Icon && <Icon size={size === 'sm' ? 12 : 14} />}
       {domain.label}
     </span>
   );

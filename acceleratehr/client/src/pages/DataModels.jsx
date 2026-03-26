@@ -7,11 +7,12 @@ import Modal from '../components/Modal';
 import DomainBadge from '../components/DomainBadge';
 import { CardSkeleton } from '../components/Skeleton';
 import { Search, X, Key, ArrowRight, Database, Table2, ChevronDown, ChevronRight, Download } from 'lucide-react';
-import { getDomain, DOMAINS } from '../lib/domains';
+import { getDomain, useDomains } from '../lib/domains';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function DataModels() {
   const { data: models, isLoading } = useSWR('/data-models', fetcher);
+  const { domains } = useDomains();
   const [search, setSearch] = useState('');
   const [domainFilter, setDomainFilter] = useState('all');
   const [selected, setSelected] = useState(null);
@@ -42,7 +43,7 @@ export default function DataModels() {
           <select value={domainFilter} onChange={(e) => setDomainFilter(e.target.value)}
             className="px-3 py-2.5 rounded-xl bg-navy-800 border border-white/10 text-white text-sm focus:outline-none focus:border-accent-blue/50">
             <option value="all">All Domains</option>
-            {DOMAINS.map(d => <option key={d.id} value={d.id}>{d.label}</option>)}
+            {domains.map(d => <option key={d.id} value={d.id}>{d.label}</option>)}
           </select>
         </div>
       </PageHeader>
@@ -119,8 +120,20 @@ function ExcelModelView({ model }) {
 
   return (
     <div className="space-y-6">
-      {/* Description */}
-      <p className="text-slate-400 text-sm">{model.description}</p>
+      {/* Description + Download */}
+      <div className="flex items-start justify-between gap-4">
+        <p className="text-slate-400 text-sm flex-1">{model.description}</p>
+        {model.excel_path && (
+          <a
+            href={`/uploads/${model.excel_path}`}
+            download={model.excel_name || 'data-model.xlsx'}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-sm font-semibold hover:bg-emerald-500/20 transition-colors shrink-0"
+          >
+            <Download size={14} />
+            Download Excel
+          </a>
+        )}
+      </div>
 
       {/* Diagram */}
       {model.diagram_path && (

@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { isAuthenticated, setToken } from '../lib/api';
 import { useEffect } from 'react';
 import {
-  FileText, Database, BarChart3, Bot, Target, Settings, LogOut, ArrowLeft
+  FileText, Database, BarChart3, Bot, Target, Settings, LogOut, ArrowLeft, Layers
 } from 'lucide-react';
 
 const adminNav = [
@@ -13,6 +13,7 @@ const adminNav = [
   { to: '/admin/dashboards', icon: BarChart3, label: 'Dashboards' },
   { to: '/admin/ai-use-cases', icon: Bot, label: 'AI Use Cases' },
   { to: '/admin/kpis', icon: Target, label: 'KPI Manager' },
+  { to: '/admin/domains', icon: Layers, label: 'Domains' },
   { to: '/admin/settings', icon: Settings, label: 'Settings' },
 ];
 

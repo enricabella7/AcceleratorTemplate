@@ -2,29 +2,51 @@ import { useState } from 'react';
 import useSWR, { mutate } from 'swr';
 import { fetcher, api } from '../lib/api';
 import Modal from '../components/Modal';
-import { Pencil, Trash2, Plus } from 'lucide-react';
-import { DOMAINS, getDomain } from '../lib/domains';
+import { Pencil, Trash2, Plus, Image, ExternalLink } from 'lucide-react';
+import { useDomains, getDomain } from '../lib/domains';
 import toast from 'react-hot-toast';
 
-const emptyForm = { title: '', domain: 'workforce_planning', description: '', embed_url: '', status: 'coming_soon' };
+const emptyForm = { title: '', domain: 'workforce_planning', description: '', embed_url: '', figma_url: '', status: 'coming_soon' };
 
 export default function AdminDashboards() {
   const { data: dashboards, isLoading } = useSWR('/dashboards', fetcher);
+  const { domains } = useDomains();
   const [modal, setModal] = useState(null);
   const [form, setForm] = useState(emptyForm);
+  const [imageFile, setImageFile] = useState(null);
   const [saving, setSaving] = useState(false);
 
-  const openAdd = () => { setForm(emptyForm); setModal('add'); };
-  const openEdit = (d) => { setForm({ title: d.title, domain: d.domain, description: d.description || '', embed_url: d.embed_url || '', status: d.status }); setModal(d); };
+  const openAdd = () => { setForm(emptyForm); setImageFile(null); setModal('add'); };
+  const openEdit = (d) => {
+    setForm({
+      title: d.title,
+      domain: d.domain,
+      description: d.description || '',
+      embed_url: d.embed_url || '',
+      figma_url: d.figma_url || '',
+      status: d.status,
+    });
+    setImageFile(null);
+    setModal(d);
+  };
 
   const handleSave = async () => {
     setSaving(true);
     try {
+      const fd = new FormData();
+      fd.append('title', form.title);
+      fd.append('domain', form.domain);
+      fd.append('description', form.description);
+      fd.append('embed_url', form.embed_url);
+      fd.append('figma_url', form.figma_url);
+      fd.append('status', form.status);
+      if (imageFile) fd.append('image', imageFile);
+
       if (modal === 'add') {
-        await api.post('/dashboards', form);
+        await api.post('/dashboards', fd);
         toast.success('Dashboard created');
       } else {
-        await api.put(`/dashboards/${modal.id}`, form);
+        await api.put(`/dashboards/${modal.id}`, fd);
         toast.success('Dashboard updated');
       }
       mutate('/dashboards');
@@ -58,7 +80,8 @@ export default function AdminDashboards() {
               <th className="text-left px-4 py-3 text-xs text-slate-500 uppercase tracking-wider">Title</th>
               <th className="text-left px-4 py-3 text-xs text-slate-500 uppercase tracking-wider">Domain</th>
               <th className="text-left px-4 py-3 text-xs text-slate-500 uppercase tracking-wider">Status</th>
-              <th className="text-left px-4 py-3 text-xs text-slate-500 uppercase tracking-wider">Embed URL</th>
+              <th className="text-left px-4 py-3 text-xs text-slate-500 uppercase tracking-wider">Image</th>
+              <th className="text-left px-4 py-3 text-xs text-slate-500 uppercase tracking-wider">Figma</th>
               <th className="text-right px-4 py-3 text-xs text-slate-500 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
@@ -68,7 +91,20 @@ export default function AdminDashboards() {
                 <td className="px-4 py-3 text-white font-medium">{d.title}</td>
                 <td className="px-4 py-3 text-slate-400">{getDomain(d.domain).label}</td>
                 <td className="px-4 py-3 text-slate-400">{statusLabel[d.status] || d.status}</td>
-                <td className="px-4 py-3 text-slate-400 truncate max-w-[200px]">{d.embed_url || '—'}</td>
+                <td className="px-4 py-3">
+                  {d.image_path ? (
+                    <span className="inline-flex items-center gap-1 text-xs text-accent-blue"><Image size={12} /> Yes</span>
+                  ) : (
+                    <span className="text-xs text-slate-500">—</span>
+                  )}
+                </td>
+                <td className="px-4 py-3">
+                  {d.figma_url ? (
+                    <span className="inline-flex items-center gap-1 text-xs text-purple-400"><ExternalLink size={12} /> Set</span>
+                  ) : (
+                    <span className="text-xs text-slate-500">—</span>
+                  )}
+                </td>
                 <td className="px-4 py-3">
                   <div className="flex gap-1 justify-end">
                     <button onClick={() => openEdit(d)} className="p-1.5 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white"><Pencil size={14} /></button>
@@ -81,7 +117,7 @@ export default function AdminDashboards() {
         </table>
       </div>
 
-      <Modal open={!!modal} onClose={() => setModal(null)} title={modal === 'add' ? 'Add Dashboard' : 'Edit Dashboard'}>
+      <Modal open={!!modal} onClose={() => setModal(null)} title={modal === 'add' ? 'Add Dashboard' : 'Edit Dashboard'} wide>
         <div className="space-y-4">
           <div>
             <label className="block text-xs text-slate-500 uppercase tracking-wider mb-1.5">Title</label>
@@ -91,7 +127,7 @@ export default function AdminDashboards() {
             <div>
               <label className="block text-xs text-slate-500 uppercase tracking-wider mb-1.5">Domain</label>
               <select value={form.domain} onChange={e => setForm(f => ({ ...f, domain: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl bg-navy-900 border border-white/10 text-white text-sm focus:outline-none focus:border-accent-blue/50">
-                {DOMAINS.map(d => <option key={d.id} value={d.id}>{d.label}</option>)}
+                {domains.map(d => <option key={d.id} value={d.id}>{d.label}</option>)}
               </select>
             </div>
             <div>
@@ -110,6 +146,29 @@ export default function AdminDashboards() {
           <div>
             <label className="block text-xs text-slate-500 uppercase tracking-wider mb-1.5">Embed URL (optional)</label>
             <input type="url" value={form.embed_url} onChange={e => setForm(f => ({ ...f, embed_url: e.target.value }))} placeholder="https://app.powerbi.com/..." className="w-full px-3 py-2.5 rounded-xl bg-navy-900 border border-white/10 text-white text-sm focus:outline-none focus:border-accent-blue/50" />
+          </div>
+          <div>
+            <label className="block text-xs text-slate-500 uppercase tracking-wider mb-1.5">Figma URL (optional — adds "Immersive Experience" button)</label>
+            <input type="url" value={form.figma_url} onChange={e => setForm(f => ({ ...f, figma_url: e.target.value }))} placeholder="https://www.figma.com/proto/..." className="w-full px-3 py-2.5 rounded-xl bg-navy-900 border border-white/10 text-white text-sm focus:outline-none focus:border-accent-blue/50" />
+          </div>
+          <div>
+            <label className="block text-xs text-slate-500 uppercase tracking-wider mb-2">Dashboard Image (PNG, JPG)</label>
+            <div className="flex items-center gap-3">
+              <label className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-accent-blue/15 border border-accent-blue/30 text-accent-blue text-sm font-semibold cursor-pointer hover:bg-accent-blue/20 transition-colors">
+                <Image size={16} />
+                {imageFile ? imageFile.name : 'Choose image…'}
+                <input type="file" accept=".png,.jpg,.jpeg" onChange={e => setImageFile(e.target.files[0])} className="hidden" />
+              </label>
+              {imageFile && (
+                <button onClick={() => setImageFile(null)} className="text-xs text-slate-500 hover:text-red-400">Remove</button>
+              )}
+            </div>
+            {modal !== 'add' && modal?.image_path && !imageFile && (
+              <div className="mt-2">
+                <p className="text-xs text-accent-blue mb-1">Current image:</p>
+                <img src={`/uploads/${modal.image_path}`} alt="Dashboard" className="max-h-24 rounded-lg border border-white/10" />
+              </div>
+            )}
           </div>
           <div className="flex gap-2 justify-end pt-2">
             <button onClick={() => setModal(null)} className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-slate-300 text-sm font-semibold">Cancel</button>

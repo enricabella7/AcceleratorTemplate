@@ -7,7 +7,7 @@ import Modal from '../components/Modal';
 import DomainBadge from '../components/DomainBadge';
 import { CardSkeleton } from '../components/Skeleton';
 import { getDomain } from '../lib/domains';
-import { BarChart3, ExternalLink } from 'lucide-react';
+import { BarChart3, ExternalLink, Sparkles } from 'lucide-react';
 
 const statusStyles = {
   live: { bg: 'bg-green-500/15', text: 'text-green-400', label: 'Live' },
@@ -35,6 +35,12 @@ export default function Dashboards() {
             const status = statusStyles[dash.status] || statusStyles.coming_soon;
             return (
               <Card key={dash.id} delay={i * 0.05} onClick={() => setSelected(dash)}>
+                {/* Image preview if available */}
+                {dash.image_path && (
+                  <div className="rounded-lg overflow-hidden border border-white/5 mb-3 -mx-1 -mt-1">
+                    <img src={`/uploads/${dash.image_path}`} alt={dash.title} className="w-full h-32 object-cover" />
+                  </div>
+                )}
                 <div className="flex items-start gap-3">
                   <div className="w-11 h-11 rounded-xl flex items-center justify-center text-white shrink-0" style={{ background: domain.color }}>
                     <BarChart3 size={20} />
@@ -52,7 +58,7 @@ export default function Dashboards() {
                 </div>
                 <div className="flex items-center justify-between mt-4 text-sm font-bold text-accent-blue">
                   <span>View Dashboard</span>
-                  <span>→</span>
+                  <span>&rarr;</span>
                 </div>
               </Card>
             );
@@ -70,7 +76,47 @@ export default function Dashboards() {
         {selected && (
           <div>
             <p className="text-slate-400 text-sm mb-5">{selected.description}</p>
-            {selected.embed_url ? (
+
+            {/* Action buttons row */}
+            <div className="flex gap-3 flex-wrap mb-5">
+              {selected.embed_url && (
+                <a
+                  href={selected.embed_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-accent-blue/15 border border-accent-blue/30 text-accent-blue text-sm font-semibold hover:bg-accent-blue/20 transition-colors"
+                >
+                  <ExternalLink size={14} />
+                  Open Dashboard
+                </a>
+              )}
+              {selected.figma_url && (
+                <a
+                  href={selected.figma_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-400 text-sm font-semibold hover:bg-purple-500/20 transition-colors"
+                >
+                  <Sparkles size={14} />
+                  Immersive Experience
+                </a>
+              )}
+            </div>
+
+            {/* Dashboard image */}
+            {selected.image_path && (
+              <div className="rounded-xl overflow-hidden border border-white/10 mb-5">
+                <img
+                  src={`/uploads/${selected.image_path}`}
+                  alt={selected.title}
+                  className="w-full"
+                  style={{ maxHeight: 500, objectFit: 'contain' }}
+                />
+              </div>
+            )}
+
+            {/* Embed iframe with Power BI fixes */}
+            {selected.embed_url && (
               <div className="space-y-3">
                 <div className="rounded-xl overflow-hidden border border-white/10" style={{ height: 480 }}>
                   <iframe
@@ -79,19 +125,20 @@ export default function Dashboards() {
                     title={selected.title}
                     frameBorder="0"
                     allowFullScreen
+                    allow="fullscreen"
+                    sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-popups-to-escape-sandbox"
+                    loading="lazy"
                   />
                 </div>
-                <a
-                  href={selected.embed_url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 text-sm text-accent-blue hover:underline"
-                >
-                  <ExternalLink size={14} />
-                  Open in new tab
-                </a>
+                <p className="text-xs text-slate-500">
+                  If the embed doesn't load, use the "Open Dashboard" button above to view it in a new tab.
+                  Some services (like Power BI) may restrict iframe embedding.
+                </p>
               </div>
-            ) : (
+            )}
+
+            {/* Placeholder if no embed and no image */}
+            {!selected.embed_url && !selected.image_path && (
               <DashboardPlaceholder domain={selected.domain} status={selected.status} />
             )}
           </div>
@@ -107,7 +154,6 @@ function DashboardPlaceholder({ domain, status }) {
 
   return (
     <div className="rounded-xl border border-white/10 bg-navy-900/60 p-6" style={{ minHeight: 360 }}>
-      {/* Mock dashboard header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white" style={{ background: d.color }}>
@@ -118,7 +164,6 @@ function DashboardPlaceholder({ domain, status }) {
         <span className="text-xs text-slate-500">Last updated: Demo data</span>
       </div>
 
-      {/* Mock KPI cards */}
       <div className="grid grid-cols-3 gap-3 mb-6">
         {['Total Headcount', 'Attrition Rate', 'Open Positions'].map((label, i) => (
           <div key={i} className="glass-light rounded-xl p-3 text-center">
@@ -128,7 +173,6 @@ function DashboardPlaceholder({ domain, status }) {
         ))}
       </div>
 
-      {/* Mock chart area */}
       <div className="glass-light rounded-xl p-4 mb-4" style={{ height: 140 }}>
         <div className="text-xs text-slate-500 mb-3">Monthly Trend (Sample)</div>
         <div className="flex items-end gap-2 h-20">
@@ -144,7 +188,7 @@ function DashboardPlaceholder({ domain, status }) {
 
       {!isLive && (
         <div className="text-center py-3">
-          <span className="text-sm text-slate-500">Configure an embed URL in Admin to display a live dashboard</span>
+          <span className="text-sm text-slate-500">Configure an embed URL or upload an image in Admin to display a dashboard</span>
         </div>
       )}
     </div>

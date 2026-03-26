@@ -3,13 +3,14 @@ import useSWR, { mutate } from 'swr';
 import { fetcher, api } from '../lib/api';
 import Modal from '../components/Modal';
 import { Pencil, Trash2, Plus, Upload, FileSpreadsheet, Image } from 'lucide-react';
-import { DOMAINS, getDomain } from '../lib/domains';
+import { useDomains, getDomain } from '../lib/domains';
 import toast from 'react-hot-toast';
 
 const emptyForm = { title: '', domain: 'workforce_planning', description: '', entities: '', relationships: '', tags: '' };
 
 export default function AdminDataModels() {
   const { data: models, isLoading } = useSWR('/data-models', fetcher);
+  const { domains } = useDomains();
   const [modal, setModal] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [excelFile, setExcelFile] = useState(null);
@@ -187,7 +188,7 @@ export default function AdminDataModels() {
             <div>
               <label className="block text-xs text-slate-500 uppercase tracking-wider mb-1.5">Domain</label>
               <select value={form.domain} onChange={e => setForm(f => ({ ...f, domain: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl bg-navy-900 border border-white/10 text-white text-sm focus:outline-none focus:border-accent-blue/50">
-                {DOMAINS.map(d => <option key={d.id} value={d.id}>{d.label}</option>)}
+                {domains.map(d => <option key={d.id} value={d.id}>{d.label}</option>)}
               </select>
             </div>
           </div>

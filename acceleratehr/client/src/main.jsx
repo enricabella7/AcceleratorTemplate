@@ -11,6 +11,7 @@ import DataModels from './pages/DataModels';
 import Dashboards from './pages/Dashboards';
 import AIUseCases from './pages/AIUseCases';
 import KpiHub from './pages/KpiHub';
+import DomainExplorer from './pages/DomainExplorer';
 import Login from './admin/Login';
 import AdminLayout from './admin/AdminLayout';
 import AdminOverview from './admin/AdminOverview';
@@ -20,8 +21,14 @@ import AdminDashboards from './admin/AdminDashboards';
 import AdminAIUseCases from './admin/AdminAIUseCases';
 import AdminKpis from './admin/AdminKpis';
 import AdminSettings from './admin/AdminSettings';
+import AdminDomains from './admin/AdminDomains';
+import { useDomains, setCachedDomains } from './lib/domains';
+import { useEffect } from 'react';
 
 function PortalLayout() {
+  const { domains } = useDomains();
+  useEffect(() => { setCachedDomains(domains); }, [domains]);
+
   return (
     <div className="grain">
       <Sidebar />
@@ -57,6 +64,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <Route path="/dashboards" element={<Dashboards />} />
           <Route path="/ai-use-cases" element={<AIUseCases />} />
           <Route path="/kpi-hub" element={<KpiHub />} />
+          <Route path="/domains" element={<DomainExplorer />} />
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<AdminOverview />} />
             <Route path="brochure" element={<AdminBrochure />} />
@@ -64,6 +72,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
             <Route path="dashboards" element={<AdminDashboards />} />
             <Route path="ai-use-cases" element={<AdminAIUseCases />} />
             <Route path="kpis" element={<AdminKpis />} />
+            <Route path="domains" element={<AdminDomains />} />
             <Route path="settings" element={<AdminSettings />} />
           </Route>
         </Route>

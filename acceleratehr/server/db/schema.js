@@ -5,6 +5,16 @@ export function createTables(db) {
       value TEXT NOT NULL
     );
 
+    CREATE TABLE IF NOT EXISTS domains (
+      id TEXT PRIMARY KEY,
+      label TEXT NOT NULL,
+      color TEXT DEFAULT '#3B82F6',
+      icon TEXT DEFAULT 'Folder',
+      sort_order INTEGER DEFAULT 0,
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now'))
+    );
+
     CREATE TABLE IF NOT EXISTS brochure_assets (
       id TEXT PRIMARY KEY,
       title TEXT NOT NULL,
@@ -42,6 +52,8 @@ export function createTables(db) {
       domain TEXT NOT NULL,
       description TEXT,
       embed_url TEXT,
+      figma_url TEXT,
+      image_path TEXT,
       status TEXT DEFAULT 'coming_soon',
       icon TEXT,
       sort_order INTEGER DEFAULT 0,
@@ -78,15 +90,13 @@ export function createTables(db) {
     );
   `);
 
-  // Migrations: add columns if they don't exist (for existing databases)
-  const cols = db.prepare("PRAGMA table_info(data_models)").all().map(c => c.name);
-  if (!cols.includes('tables_json')) {
-    db.exec("ALTER TABLE data_models ADD COLUMN tables_json TEXT");
-  }
-  if (!cols.includes('excel_path')) {
-    db.exec("ALTER TABLE data_models ADD COLUMN excel_path TEXT");
-  }
-  if (!cols.includes('excel_name')) {
-    db.exec("ALTER TABLE data_models ADD COLUMN excel_name TEXT");
-  }
+  // Migrations for existing databases
+  const dmCols = db.prepare("PRAGMA table_info(data_models)").all().map(c => c.name);
+  if (!dmCols.includes('tables_json')) db.exec("ALTER TABLE data_models ADD COLUMN tables_json TEXT");
+  if (!dmCols.includes('excel_path')) db.exec("ALTER TABLE data_models ADD COLUMN excel_path TEXT");
+  if (!dmCols.includes('excel_name')) db.exec("ALTER TABLE data_models ADD COLUMN excel_name TEXT");
+
+  const dashCols = db.prepare("PRAGMA table_info(dashboards)").all().map(c => c.name);
+  if (!dashCols.includes('figma_url')) db.exec("ALTER TABLE dashboards ADD COLUMN figma_url TEXT");
+  if (!dashCols.includes('image_path')) db.exec("ALTER TABLE dashboards ADD COLUMN image_path TEXT");
 }

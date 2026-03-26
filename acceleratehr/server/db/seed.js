@@ -17,6 +17,18 @@ export function seedDatabase(db) {
     insertSetting.run(key, value);
   }
 
+  // Domains
+  const insertDomain = db.prepare('INSERT INTO domains (id, label, color, icon, sort_order) VALUES (?, ?, ?, ?, ?)');
+  const defaultDomains = [
+    { id: 'workforce_planning', label: 'Workforce Planning', color: '#3B82F6', icon: 'Users' },
+    { id: 'talent_acquisition', label: 'Talent Acquisition', color: '#8B5CF6', icon: 'Target' },
+    { id: 'people_development', label: 'People Development', color: '#10B981', icon: 'GraduationCap' },
+    { id: 'compensation_benefits', label: 'Compensation & Benefits', color: '#F59E0B', icon: 'DollarSign' },
+    { id: 'hr_operations', label: 'HR Operations', color: '#EC4899', icon: 'Settings' },
+    { id: 'diversity_inclusion', label: 'Diversity & Inclusion', color: '#06B6D4', icon: 'Heart' },
+  ];
+  defaultDomains.forEach((d, i) => insertDomain.run(d.id, d.label, d.color, d.icon, i));
+
   // Data Models
   const insertModel = db.prepare(`
     INSERT INTO data_models (id, title, domain, description, entities, relationships, tags, sort_order)

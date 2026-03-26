@@ -13,6 +13,7 @@ import dashboardRoutes from './routes/dashboards.js';
 import aiUseCaseRoutes from './routes/ai-use-cases.js';
 import kpiRoutes from './routes/kpis.js';
 import aiGenerateRoutes from './routes/ai-generate.js';
+import domainRoutes from './routes/domains.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -23,6 +24,7 @@ app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
 app.use('/api/auth', authRoutes(db));
+app.use('/api/domains', domainRoutes(db));
 
 app.use('/api/settings', settingsRoutes(db));
 app.use('/api/brochure', brochureRoutes(db));
