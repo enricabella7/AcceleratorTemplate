@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import useSWR, { mutate } from 'swr';
-import { fetcher, api } from '../lib/api';
+import { fetcher, api, uploadUrl } from '../lib/api';
 import Modal from '../components/Modal';
 import { Pencil, Trash2, Plus, Upload, FileSpreadsheet, Image } from 'lucide-react';
 import { useDomains, getDomain } from '../lib/domains';
@@ -259,7 +259,7 @@ export default function AdminDataModels() {
             {modal !== 'add' && modal?.diagram_path && !diagramFile && (
               <div className="mt-2">
                 <p className="text-xs text-accent-blue mb-1">Current diagram:</p>
-                <img src={`/uploads/${modal.diagram_path}`} alt="Diagram" className="max-h-32 rounded-lg border border-white/10" />
+                <img src={uploadUrl(modal.diagram_path)} alt="Diagram" className="max-h-32 rounded-lg border border-white/10" />
               </div>
             )}
           </div>

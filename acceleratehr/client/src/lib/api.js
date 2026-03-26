@@ -1,4 +1,9 @@
-const BASE = import.meta.env.VITE_API_URL || '';
+const API_ORIGIN = import.meta.env.VITE_API_URL || '';
+const BASE = API_ORIGIN + '/api';
+
+export function uploadUrl(path) {
+  return `${API_ORIGIN}/uploads/${path}`;
+}
 
 function getToken() {
   return localStorage.getItem('ahr_token');

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import useSWR from 'swr';
-import { fetcher } from '../lib/api';
+import { fetcher, uploadUrl } from '../lib/api';
 import PageHeader from '../components/PageHeader';
 import Card from '../components/Card';
 import Modal from '../components/Modal';
@@ -38,7 +38,7 @@ export default function Dashboards() {
                 {/* Image preview if available */}
                 {dash.image_path && (
                   <div className="rounded-lg overflow-hidden border border-white/5 mb-3 -mx-1 -mt-1">
-                    <img src={`/uploads/${dash.image_path}`} alt={dash.title} className="w-full h-32 object-cover" />
+                    <img src={uploadUrl(dash.image_path)} alt={dash.title} className="w-full h-32 object-cover" />
                   </div>
                 )}
                 <div className="flex items-start gap-3">
@@ -107,7 +107,7 @@ export default function Dashboards() {
             {selected.image_path && (
               <div className="rounded-xl overflow-hidden border border-white/10 mb-5">
                 <img
-                  src={`/uploads/${selected.image_path}`}
+                  src={uploadUrl(selected.image_path)}
                   alt={selected.title}
                   className="w-full"
                   style={{ maxHeight: 500, objectFit: 'contain' }}

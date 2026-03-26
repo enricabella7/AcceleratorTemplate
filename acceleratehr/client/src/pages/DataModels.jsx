@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import useSWR from 'swr';
-import { fetcher } from '../lib/api';
+import { fetcher, uploadUrl } from '../lib/api';
 import PageHeader from '../components/PageHeader';
 import Card from '../components/Card';
 import Modal from '../components/Modal';
@@ -125,7 +125,7 @@ function ExcelModelView({ model }) {
         <p className="text-slate-400 text-sm flex-1">{model.description}</p>
         {model.excel_path && (
           <a
-            href={`/uploads/${model.excel_path}`}
+            href={uploadUrl(model.excel_path)}
             download={model.excel_name || 'data-model.xlsx'}
             className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-sm font-semibold hover:bg-emerald-500/20 transition-colors shrink-0"
           >
@@ -141,7 +141,7 @@ function ExcelModelView({ model }) {
           <div className="text-xs text-slate-500 uppercase tracking-wider mb-2">Entity Relationship Diagram</div>
           <div className="rounded-xl border border-white/10 overflow-hidden bg-white p-2">
             <img
-              src={`/uploads/${model.diagram_path}`}
+              src={uploadUrl(model.diagram_path)}
               alt="Data model diagram"
               className="w-full rounded-lg"
               style={{ maxHeight: 400, objectFit: 'contain' }}
@@ -359,7 +359,7 @@ function ManualModelView({ model }) {
           <div>
             <div className="text-xs text-slate-500 uppercase tracking-wider mb-2">Diagram</div>
             <div className="rounded-xl border border-white/10 overflow-hidden bg-white p-2">
-              <img src={`/uploads/${model.diagram_path}`} alt="Diagram" className="w-full rounded-lg" style={{ maxHeight: 300, objectFit: 'contain' }} />
+              <img src={uploadUrl(model.diagram_path)} alt="Diagram" className="w-full rounded-lg" style={{ maxHeight: 300, objectFit: 'contain' }} />
             </div>
           </div>
         )}

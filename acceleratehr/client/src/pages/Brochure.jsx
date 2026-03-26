@@ -1,5 +1,5 @@
 import useSWR from 'swr';
-import { fetcher } from '../lib/api';
+import { fetcher, uploadUrl } from '../lib/api';
 import PageHeader from '../components/PageHeader';
 import Card from '../components/Card';
 import { CardSkeleton } from '../components/Skeleton';
@@ -65,7 +65,7 @@ export default function Brochure() {
                   {asset.file_path && (
                     <>
                       <a
-                        href={`/uploads/${asset.file_path}`}
+                        href={uploadUrl(asset.file_path)}
                         download
                         className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-accent-blue text-white text-sm font-semibold hover:bg-blue-600 transition-colors"
                       >
@@ -73,7 +73,7 @@ export default function Brochure() {
                         Download
                       </a>
                       <a
-                        href={`/uploads/${asset.file_path}`}
+                        href={uploadUrl(asset.file_path)}
                         target="_blank"
                         rel="noreferrer"
                         className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-slate-300 text-sm font-semibold hover:bg-white/10 transition-colors"

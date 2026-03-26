@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import useSWR, { mutate } from 'swr';
-import { fetcher, api } from '../lib/api';
+import { fetcher, api, uploadUrl } from '../lib/api';
 import Modal from '../components/Modal';
 import { Pencil, Trash2, Plus, Image, ExternalLink } from 'lucide-react';
 import { useDomains, getDomain } from '../lib/domains';
@@ -166,7 +166,7 @@ export default function AdminDashboards() {
             {modal !== 'add' && modal?.image_path && !imageFile && (
               <div className="mt-2">
                 <p className="text-xs text-accent-blue mb-1">Current image:</p>
-                <img src={`/uploads/${modal.image_path}`} alt="Dashboard" className="max-h-24 rounded-lg border border-white/10" />
+                <img src={uploadUrl(modal.image_path)} alt="Dashboard" className="max-h-24 rounded-lg border border-white/10" />
               </div>
             )}
           </div>
