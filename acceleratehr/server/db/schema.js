@@ -27,7 +27,10 @@ export function createTables(db) {
       entities TEXT,
       relationships TEXT,
       tags TEXT,
+      tables_json TEXT,
       diagram_path TEXT,
+      excel_path TEXT,
+      excel_name TEXT,
       sort_order INTEGER DEFAULT 0,
       created_at TEXT DEFAULT (datetime('now')),
       updated_at TEXT DEFAULT (datetime('now'))
@@ -74,4 +77,16 @@ export function createTables(db) {
       updated_at TEXT DEFAULT (datetime('now'))
     );
   `);
+
+  // Migrations: add columns if they don't exist (for existing databases)
+  const cols = db.prepare("PRAGMA table_info(data_models)").all().map(c => c.name);
+  if (!cols.includes('tables_json')) {
+    db.exec("ALTER TABLE data_models ADD COLUMN tables_json TEXT");
+  }
+  if (!cols.includes('excel_path')) {
+    db.exec("ALTER TABLE data_models ADD COLUMN excel_path TEXT");
+  }
+  if (!cols.includes('excel_name')) {
+    db.exec("ALTER TABLE data_models ADD COLUMN excel_name TEXT");
+  }
 }
