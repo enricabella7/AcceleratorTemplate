@@ -3,6 +3,7 @@ import useSWR, { mutate } from 'swr';
 import { fetcher, api } from '../lib/api';
 import Modal from '../components/Modal';
 import { Pencil, Trash2, Plus } from 'lucide-react';
+import SortButtons from '../components/SortButtons';
 import toast from 'react-hot-toast';
 
 const emptyForm = { title: '', icon: '🤖', description: '', tags: '', demo_url: '', has_builtin_demo: false };
@@ -50,6 +51,18 @@ export default function AdminAIUseCases() {
     mutate('/ai-use-cases');
   };
 
+  const handleMove = async (fromIdx, toIdx) => {
+    const items = [...(useCases || [])];
+    const [moved] = items.splice(fromIdx, 1);
+    items.splice(toIdx, 0, moved);
+    mutate('/ai-use-cases/all', items, false);
+    try {
+      await api.post('/ai-use-cases/reorder', { ids: items.map(u => u.id) });
+      mutate('/ai-use-cases/all');
+      mutate('/ai-use-cases');
+    } catch { toast.error('Reorder failed'); mutate('/ai-use-cases/all'); }
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
@@ -63,6 +76,7 @@ export default function AdminAIUseCases() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-white/5">
+              <th className="w-10 px-2 py-3"></th>
               <th className="text-left px-4 py-3 text-xs text-slate-500 uppercase tracking-wider">Icon</th>
               <th className="text-left px-4 py-3 text-xs text-slate-500 uppercase tracking-wider">Title</th>
               <th className="text-left px-4 py-3 text-xs text-slate-500 uppercase tracking-wider">Built-in Demo</th>
@@ -71,8 +85,11 @@ export default function AdminAIUseCases() {
             </tr>
           </thead>
           <tbody>
-            {(useCases || []).map(uc => (
+            {(useCases || []).map((uc, i) => (
               <tr key={uc.id} className="border-b border-white/5 hover:bg-white/[0.02]">
+                <td className="px-2 py-3">
+                  <SortButtons index={i} total={(useCases || []).length} onMove={handleMove} />
+                </td>
                 <td className="px-4 py-3 text-xl">{uc.icon}</td>
                 <td className="px-4 py-3 text-white font-medium">{uc.title}</td>
                 <td className="px-4 py-3 text-slate-400">{uc.has_builtin_demo ? 'Yes' : 'No'}</td>

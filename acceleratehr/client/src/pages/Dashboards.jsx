@@ -17,7 +17,10 @@ const statusStyles = {
 
 export default function Dashboards() {
   const { data: dashboards, isLoading } = useSWR('/dashboards', fetcher);
+  const { data: settings } = useSWR('/settings', fetcher);
   const [selected, setSelected] = useState(null);
+
+  const figmaUrl = settings?.dashboards_figma_url;
 
   return (
     <div>
@@ -25,6 +28,25 @@ export default function Dashboards() {
         title="Observation Deck"
         description="Executive dashboards for real-time workforce insights. Open a dashboard to preview visuals or access live embeds."
       />
+
+      {/* Immersive Experience button — shown when global Figma URL is configured */}
+      {figmaUrl && (
+        <div className="mb-6">
+          <a
+            href={figmaUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2.5 px-5 py-3.5 rounded-2xl bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 text-white text-sm font-semibold hover:from-purple-600/30 hover:to-pink-600/30 transition-all group"
+          >
+            <Sparkles size={18} className="text-purple-400 group-hover:text-purple-300" />
+            <div>
+              <div className="font-semibold">Immersive Experience</div>
+              <div className="text-xs text-purple-300/70 font-normal mt-0.5">Explore all dashboards in an interactive Figma prototype</div>
+            </div>
+            <ExternalLink size={14} className="text-purple-400 ml-2" />
+          </a>
+        </div>
+      )}
 
       {isLoading ? (
         <CardSkeleton count={3} />
@@ -35,7 +57,6 @@ export default function Dashboards() {
             const status = statusStyles[dash.status] || statusStyles.coming_soon;
             return (
               <Card key={dash.id} delay={i * 0.05} onClick={() => setSelected(dash)}>
-                {/* Image preview if available */}
                 {dash.image_path && (
                   <div className="rounded-lg overflow-hidden border border-white/5 mb-3 -mx-1 -mt-1">
                     <img src={uploadUrl(dash.image_path)} alt={dash.title} className="w-full h-32 object-cover" />
@@ -88,17 +109,6 @@ export default function Dashboards() {
                 >
                   <ExternalLink size={14} />
                   Open Dashboard
-                </a>
-              )}
-              {selected.figma_url && (
-                <a
-                  href={selected.figma_url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-400 text-sm font-semibold hover:bg-purple-500/20 transition-colors"
-                >
-                  <Sparkles size={14} />
-                  Immersive Experience
                 </a>
               )}
             </div>

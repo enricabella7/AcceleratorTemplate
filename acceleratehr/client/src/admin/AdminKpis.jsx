@@ -3,6 +3,7 @@ import useSWR, { mutate } from 'swr';
 import { fetcher, api } from '../lib/api';
 import Modal from '../components/Modal';
 import { Pencil, Trash2, Plus, Upload, Download } from 'lucide-react';
+import SortButtons from '../components/SortButtons';
 import { useDomains, getDomain } from '../lib/domains';
 import toast from 'react-hot-toast';
 
@@ -82,6 +83,17 @@ export default function AdminKpis() {
     e.target.value = '';
   };
 
+  const handleMove = async (fromIdx, toIdx) => {
+    const items = [...(kpis || [])];
+    const [moved] = items.splice(fromIdx, 1);
+    items.splice(toIdx, 0, moved);
+    mutate('/kpis', items, false);
+    try {
+      await api.post('/kpis/reorder', { ids: items.map(k => k.id) });
+      mutate('/kpis');
+    } catch { toast.error('Reorder failed'); mutate('/kpis'); }
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
@@ -105,6 +117,7 @@ export default function AdminKpis() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-white/5">
+                <th className="w-10 px-2 py-3"></th>
                 <th className="text-left px-4 py-3 text-xs text-slate-500 uppercase tracking-wider">Name</th>
                 <th className="text-left px-4 py-3 text-xs text-slate-500 uppercase tracking-wider">Domain</th>
                 <th className="text-left px-4 py-3 text-xs text-slate-500 uppercase tracking-wider">Frequency</th>
@@ -112,8 +125,11 @@ export default function AdminKpis() {
               </tr>
             </thead>
             <tbody>
-              {(kpis || []).map(k => (
+              {(kpis || []).map((k, i) => (
                 <tr key={k.id} className="border-b border-white/5 hover:bg-white/[0.02]">
+                  <td className="px-2 py-3">
+                    <SortButtons index={i} total={(kpis || []).length} onMove={handleMove} />
+                  </td>
                   <td className="px-4 py-3 text-white font-medium">{k.name}</td>
                   <td className="px-4 py-3 text-slate-400">{getDomain(k.domain).label}</td>
                   <td className="px-4 py-3 text-slate-400">{k.frequency}</td>

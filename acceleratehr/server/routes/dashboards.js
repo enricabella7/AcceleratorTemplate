@@ -61,5 +61,17 @@ export default function dashboardRoutes(db) {
     res.json({ success: true });
   });
 
+  // Batch reorder
+  router.post('/reorder', authMiddleware, (req, res) => {
+    const { ids } = req.body;
+    if (!Array.isArray(ids)) return res.status(400).json({ error: 'ids array required' });
+    const stmt = db.prepare('UPDATE dashboards SET sort_order = ? WHERE id = ?');
+    const tx = db.transaction(() => {
+      ids.forEach((id, i) => stmt.run(i, id));
+    });
+    tx();
+    res.json({ success: true });
+  });
+
   return router;
 }

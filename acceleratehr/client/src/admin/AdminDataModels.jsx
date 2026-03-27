@@ -3,6 +3,7 @@ import useSWR, { mutate } from 'swr';
 import { fetcher, api, uploadUrl } from '../lib/api';
 import Modal from '../components/Modal';
 import { Pencil, Trash2, Plus, Upload, FileSpreadsheet, Image } from 'lucide-react';
+import SortButtons from '../components/SortButtons';
 import { useDomains, getDomain } from '../lib/domains';
 import toast from 'react-hot-toast';
 
@@ -92,6 +93,17 @@ export default function AdminDataModels() {
     mutate('/data-models');
   };
 
+  const handleMove = async (fromIdx, toIdx) => {
+    const items = [...(models || [])];
+    const [moved] = items.splice(fromIdx, 1);
+    items.splice(toIdx, 0, moved);
+    mutate('/data-models', items, false);
+    try {
+      await api.post('/data-models/reorder', { ids: items.map(m => m.id) });
+      mutate('/data-models');
+    } catch { toast.error('Reorder failed'); mutate('/data-models'); }
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
@@ -105,6 +117,7 @@ export default function AdminDataModels() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-white/5">
+              <th className="w-10 px-2 py-3"></th>
               <th className="text-left px-4 py-3 text-xs text-slate-500 uppercase tracking-wider">Title</th>
               <th className="text-left px-4 py-3 text-xs text-slate-500 uppercase tracking-wider">Domain</th>
               <th className="text-left px-4 py-3 text-xs text-slate-500 uppercase tracking-wider">Tables</th>
@@ -114,8 +127,11 @@ export default function AdminDataModels() {
             </tr>
           </thead>
           <tbody>
-            {(models || []).map(m => (
+            {(models || []).map((m, i) => (
               <tr key={m.id} className="border-b border-white/5 hover:bg-white/[0.02]">
+                <td className="px-2 py-3">
+                  <SortButtons index={i} total={(models || []).length} onMove={handleMove} />
+                </td>
                 <td className="px-4 py-3 text-white font-medium">{m.title}</td>
                 <td className="px-4 py-3 text-slate-400">{getDomain(m.domain).label}</td>
                 <td className="px-4 py-3 text-slate-400">

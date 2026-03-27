@@ -1,20 +1,39 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import useSWR, { mutate } from 'swr';
 import { fetcher, api, uploadUrl } from '../lib/api';
 import Modal from '../components/Modal';
-import { Pencil, Trash2, Plus, Image, ExternalLink } from 'lucide-react';
+import SortButtons from '../components/SortButtons';
+import { Pencil, Trash2, Plus, Image, Sparkles, Save } from 'lucide-react';
 import { useDomains, getDomain } from '../lib/domains';
 import toast from 'react-hot-toast';
 
-const emptyForm = { title: '', domain: 'workforce_planning', description: '', embed_url: '', figma_url: '', status: 'coming_soon' };
+const emptyForm = { title: '', domain: 'workforce_planning', description: '', embed_url: '', status: 'coming_soon' };
 
 export default function AdminDashboards() {
   const { data: dashboards, isLoading } = useSWR('/dashboards', fetcher);
+  const { data: settings } = useSWR('/settings/all', fetcher);
   const { domains } = useDomains();
   const [modal, setModal] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [imageFile, setImageFile] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [figmaUrl, setFigmaUrl] = useState('');
+  const [figmaSaving, setFigmaSaving] = useState(false);
+
+  useEffect(() => {
+    if (settings?.dashboards_figma_url) setFigmaUrl(settings.dashboards_figma_url);
+  }, [settings]);
+
+  const saveFigmaUrl = async () => {
+    setFigmaSaving(true);
+    try {
+      await api.put('/settings', { dashboards_figma_url: figmaUrl });
+      toast.success('Figma URL saved');
+      mutate('/settings/all');
+      mutate('/settings');
+    } catch (err) { toast.error(err.message); }
+    finally { setFigmaSaving(false); }
+  };
 
   const openAdd = () => { setForm(emptyForm); setImageFile(null); setModal('add'); };
   const openEdit = (d) => {
@@ -23,7 +42,6 @@ export default function AdminDashboards() {
       domain: d.domain,
       description: d.description || '',
       embed_url: d.embed_url || '',
-      figma_url: d.figma_url || '',
       status: d.status,
     });
     setImageFile(null);
@@ -38,7 +56,6 @@ export default function AdminDashboards() {
       fd.append('domain', form.domain);
       fd.append('description', form.description);
       fd.append('embed_url', form.embed_url);
-      fd.append('figma_url', form.figma_url);
       fd.append('status', form.status);
       if (imageFile) fd.append('image', imageFile);
 
@@ -62,6 +79,18 @@ export default function AdminDashboards() {
     mutate('/dashboards');
   };
 
+  const handleMove = async (fromIdx, toIdx) => {
+    const items = [...(dashboards || [])];
+    const [moved] = items.splice(fromIdx, 1);
+    items.splice(toIdx, 0, moved);
+    // Optimistic update
+    mutate('/dashboards', items, false);
+    try {
+      await api.post('/dashboards/reorder', { ids: items.map(d => d.id) });
+      mutate('/dashboards');
+    } catch (err) { toast.error('Reorder failed'); mutate('/dashboards'); }
+  };
+
   const statusLabel = { live: 'Live', preview: 'Preview', coming_soon: 'Coming Soon' };
 
   return (
@@ -73,34 +102,58 @@ export default function AdminDashboards() {
         </button>
       </div>
 
+      {/* Global Figma Immersive Experience URL */}
+      <div className="glass rounded-xl p-4 mb-4">
+        <div className="flex items-center gap-2 mb-2">
+          <Sparkles size={16} className="text-purple-400" />
+          <span className="text-sm font-semibold text-white">Immersive Experience (Figma)</span>
+        </div>
+        <p className="text-xs text-slate-500 mb-3">
+          Set a Figma prototype URL to show an "Immersive Experience" button at the top of the Observation Deck page.
+        </p>
+        <div className="flex gap-2">
+          <input
+            type="url"
+            value={figmaUrl}
+            onChange={e => setFigmaUrl(e.target.value)}
+            placeholder="https://www.figma.com/proto/..."
+            className="flex-1 px-3 py-2.5 rounded-xl bg-navy-900 border border-white/10 text-white text-sm focus:outline-none focus:border-purple-500/50"
+          />
+          <button
+            onClick={saveFigmaUrl}
+            disabled={figmaSaving}
+            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-400 text-sm font-semibold hover:bg-purple-500/20 disabled:opacity-50"
+          >
+            <Save size={14} />
+            {figmaSaving ? 'Saving…' : 'Save'}
+          </button>
+        </div>
+      </div>
+
       <div className="glass rounded-xl overflow-hidden">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-white/5">
+              <th className="w-10 px-2 py-3"></th>
               <th className="text-left px-4 py-3 text-xs text-slate-500 uppercase tracking-wider">Title</th>
               <th className="text-left px-4 py-3 text-xs text-slate-500 uppercase tracking-wider">Domain</th>
               <th className="text-left px-4 py-3 text-xs text-slate-500 uppercase tracking-wider">Status</th>
               <th className="text-left px-4 py-3 text-xs text-slate-500 uppercase tracking-wider">Image</th>
-              <th className="text-left px-4 py-3 text-xs text-slate-500 uppercase tracking-wider">Figma</th>
               <th className="text-right px-4 py-3 text-xs text-slate-500 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {(dashboards || []).map(d => (
+            {(dashboards || []).map((d, i) => (
               <tr key={d.id} className="border-b border-white/5 hover:bg-white/[0.02]">
+                <td className="px-2 py-3">
+                  <SortButtons index={i} total={(dashboards || []).length} onMove={handleMove} />
+                </td>
                 <td className="px-4 py-3 text-white font-medium">{d.title}</td>
                 <td className="px-4 py-3 text-slate-400">{getDomain(d.domain).label}</td>
                 <td className="px-4 py-3 text-slate-400">{statusLabel[d.status] || d.status}</td>
                 <td className="px-4 py-3">
                   {d.image_path ? (
                     <span className="inline-flex items-center gap-1 text-xs text-accent-blue"><Image size={12} /> Yes</span>
-                  ) : (
-                    <span className="text-xs text-slate-500">—</span>
-                  )}
-                </td>
-                <td className="px-4 py-3">
-                  {d.figma_url ? (
-                    <span className="inline-flex items-center gap-1 text-xs text-purple-400"><ExternalLink size={12} /> Set</span>
                   ) : (
                     <span className="text-xs text-slate-500">—</span>
                   )}
@@ -146,10 +199,6 @@ export default function AdminDashboards() {
           <div>
             <label className="block text-xs text-slate-500 uppercase tracking-wider mb-1.5">Embed URL (optional)</label>
             <input type="url" value={form.embed_url} onChange={e => setForm(f => ({ ...f, embed_url: e.target.value }))} placeholder="https://app.powerbi.com/..." className="w-full px-3 py-2.5 rounded-xl bg-navy-900 border border-white/10 text-white text-sm focus:outline-none focus:border-accent-blue/50" />
-          </div>
-          <div>
-            <label className="block text-xs text-slate-500 uppercase tracking-wider mb-1.5">Figma URL (optional — adds "Immersive Experience" button)</label>
-            <input type="url" value={form.figma_url} onChange={e => setForm(f => ({ ...f, figma_url: e.target.value }))} placeholder="https://www.figma.com/proto/..." className="w-full px-3 py-2.5 rounded-xl bg-navy-900 border border-white/10 text-white text-sm focus:outline-none focus:border-accent-blue/50" />
           </div>
           <div>
             <label className="block text-xs text-slate-500 uppercase tracking-wider mb-2">Dashboard Image (PNG, JPG)</label>
